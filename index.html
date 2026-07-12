@@ -1,14 +1,167 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0c41ff" />
-    <meta name="description" content="Responsive weekly calendar based on the Figma Community design." />
-    <title>Responsive Calendar</title>
+    <meta
+      name="description"
+      content="Figma 디자인을 바탕으로 만든 Supabase 연동 월간 일정 관리 앱"
+    />
+    <title>My Calendar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <main class="calendar-page">
+      <section class="calendar-card" aria-labelledby="app-title">
+        <header class="calendar-card__header">
+          <div>
+            <p class="calendar-card__eyebrow">PERSONAL CALENDAR</p>
+            <h1 class="calendar-card__title" id="app-title">My schedule</h1>
+          </div>
+          <span class="connection-badge connection-badge--pending" id="connection-badge">
+            설정 확인 중
+          </span>
+        </header>
+
+        <div class="status-message" id="connection-status" role="status" aria-live="polite">
+          캘린더를 준비하고 있습니다.
+        </div>
+
+        <section class="captcha-panel" id="captcha-panel" aria-labelledby="captcha-heading" hidden>
+          <div class="captcha-panel__copy">
+            <p class="captcha-panel__eyebrow">SECURITY CHECK</p>
+            <h2 class="captcha-panel__title" id="captcha-heading">사람인지 확인해주세요</h2>
+            <p class="captcha-panel__description">
+              확인이 완료되면 익명 사용자로 안전하게 연결됩니다.
+            </p>
+          </div>
+          <div class="captcha-panel__widget" id="captcha-widget"></div>
+          <p class="captcha-panel__status" id="captcha-status" role="status" aria-live="polite"></p>
+          <button class="captcha-panel__retry" id="captcha-retry" type="button" hidden>
+            다시 확인하기
+          </button>
+        </section>
+
+        <section class="month-calendar" aria-labelledby="month-heading">
+          <div class="month-calendar__toolbar">
+            <button
+              class="icon-button"
+              id="previous-month"
+              type="button"
+              aria-label="이전 달 보기"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            </button>
+            <h2 class="month-calendar__heading" id="month-heading"></h2>
+            <button
+              class="icon-button"
+              id="next-month"
+              type="button"
+              aria-label="다음 달 보기"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="month-calendar__weekdays" aria-hidden="true">
+            <span>월</span>
+            <span>화</span>
+            <span>수</span>
+            <span>목</span>
+            <span>금</span>
+            <span>토</span>
+            <span>일</span>
+          </div>
+          <div class="month-calendar__grid" id="calendar-grid" role="grid"></div>
+        </section>
+
+        <section class="agenda" aria-labelledby="agenda-heading">
+          <div class="agenda__header">
+            <div>
+              <p class="agenda__eyebrow">SELECTED DATE</p>
+              <h2 class="agenda__title" id="agenda-heading"></h2>
+            </div>
+            <button class="text-button" id="refresh-events" type="button">새로고침</button>
+          </div>
+          <div class="agenda__content" id="agenda-content" aria-live="polite"></div>
+        </section>
+
+        <section class="event-composer" aria-labelledby="form-heading">
+          <div class="event-composer__heading-row">
+            <div>
+              <p class="event-composer__eyebrow">NEW EVENT</p>
+              <h2 class="event-composer__title" id="form-heading">일정 추가</h2>
+            </div>
+            <span class="event-composer__date" id="form-date-label"></span>
+          </div>
+
+          <form class="event-form" id="event-form" novalidate>
+            <label class="event-form__field event-form__field--wide">
+              <span>일정 제목 <strong aria-hidden="true">*</strong></span>
+              <input
+                id="event-title"
+                name="title"
+                type="text"
+                maxlength="120"
+                placeholder="예: 주간 팀 미팅"
+                required
+              />
+            </label>
+
+            <div class="event-form__row">
+              <label class="event-form__field">
+                <span>시작 시간 <strong aria-hidden="true">*</strong></span>
+                <input id="event-start" name="startTime" type="time" value="09:00" required />
+              </label>
+              <label class="event-form__field">
+                <span>종료 시간</span>
+                <input id="event-end" name="endTime" type="time" value="10:00" />
+              </label>
+            </div>
+
+            <label class="event-form__field event-form__field--wide">
+              <span>카테고리</span>
+              <select id="event-category" name="categoryId">
+                <option value="">카테고리 없음</option>
+              </select>
+            </label>
+
+            <label class="event-form__field event-form__field--wide">
+              <span>메모</span>
+              <textarea
+                id="event-notes"
+                name="notes"
+                maxlength="500"
+                rows="3"
+                placeholder="필요한 내용을 간단히 적어주세요."
+              ></textarea>
+            </label>
+
+            <div class="event-form__footer">
+              <p class="event-form__status" id="form-status" role="status" aria-live="polite"></p>
+              <button class="primary-button" id="submit-event" type="submit">
+                <span class="primary-button__label">일정 저장</span>
+                <span class="primary-button__spinner" aria-hidden="true"></span>
+              </button>
+            </div>
+          </form>
+        </section>
+      </section>
+    </main>
+
+    <script src="./supabase-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./script.js"></script>
   </body>
 </html>
