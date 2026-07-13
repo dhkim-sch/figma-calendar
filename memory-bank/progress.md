@@ -40,3 +40,16 @@
 - 정상 SELECT 경로에서도 INSERT 1회, 초기/저장 후 조회 2회, 일정 카드 1개와 `일정이 저장되었습니다.` 상태를 확인했다.
 - `node --check script.js`와 `git diff --check`를 통과했다.
 - 실제 Supabase 재검증은 Turnstile 수동 확인과 Supabase MCP transport 복구 후 남아 있다.
+
+# 2026-07-13
+
+- Vercel Production에서 `supabase-config.js`가 404여서 Supabase 연결이 비활성화되는 원인을 확인했다.
+- `scripts/build.mjs`를 추가해 Vercel 환경변수에서 브라우저 공개 설정을 만들고 `index.html`, `styles.css`, `script.js`와 함께 `dist/`에 출력하도록 했다.
+- 빌드 단계에서 Supabase URL, publishable/legacy anon key, CAPTCHA provider와 site key를 검증하고 secret/service_role 키는 거부하도록 했다.
+- `vercel.json`에 빌드 명령과 `dist` 출력 디렉터리를 고정해 프로젝트 문서와 SQL이 배포되지 않도록 했다.
+- README에 Vercel 환경변수 4개, 빌드 방법, 배포 파일 목록과 비밀 키 금지 규칙을 추가했다.
+- 필수 환경변수 누락과 `sb_secret_` 입력이 빌드를 차단하는지 확인했고, 안전한 테스트 설정에서는 `dist/`에 앱 파일 4개만 생성되는 것을 확인했다.
+- `dist/` 정적 서버에서 `/`와 `/supabase-config.js`는 200, `/AGENTS.md`와 `/supabase/schema.sql`은 404를 반환했다.
+- `node --check scripts/build.mjs`, `node --check script.js`, `vercel.json` JSON 파싱, `git diff --check`를 통과했다.
+- 현재 환경에 `agent-browser` 실행 파일이 없어 이번 변경의 시각적 브라우저 검증은 수행하지 못했다.
+- 남은 외부 작업: Vercel Production 환경변수 등록, Cloudflare Turnstile 허용 호스트 등록, Supabase CAPTCHA secret/site key 쌍 확인, 새 배포에서 일정 저장과 새로고침 영속성 검증.

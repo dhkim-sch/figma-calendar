@@ -41,6 +41,46 @@ http://localhost:4175
 
 서버를 종료하려면 실행한 터미널에서 `Control + C`를 누릅니다.
 
+## Vercel 배포
+
+Vercel은 [`scripts/build.mjs`](./scripts/build.mjs)를 실행해 앱에 필요한 파일만
+`dist/`에 만들고, [`vercel.json`](./vercel.json)의 출력 디렉터리 설정에 따라
+`dist/`만 배포합니다. 따라서 로컬 전용 `supabase-config.js`, SQL, 프로젝트 문서는
+배포 대상에 포함되지 않습니다.
+
+Vercel 프로젝트의 **Settings → Environment Variables**에서 다음 공개용 값을
+Production 환경에 등록합니다.
+
+| 환경변수 | 값 |
+| --- | --- |
+| `FIGMA_CALENDAR_SUPABASE_URL` | 개발용 Supabase 프로젝트 URL |
+| `FIGMA_CALENDAR_SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_...` 또는 legacy `anon` key |
+| `FIGMA_CALENDAR_CAPTCHA_PROVIDER` | `turnstile` 또는 `hcaptcha` |
+| `FIGMA_CALENDAR_CAPTCHA_SITE_KEY` | 브라우저용 CAPTCHA site key |
+
+환경변수를 변경한 뒤에는 새 배포가 필요합니다. 빌드 스크립트는 필수 설정이
+없거나 `sb_secret_`, `service_role` 키가 입력되면 배포를 중단합니다. CAPTCHA
+secret key와 Supabase 관리자 키는 Vercel 환경변수나 브라우저 파일에 넣지 마세요.
+
+환경변수를 등록한 상태에서 로컬 빌드 형태를 확인하려면 다음 명령을 사용합니다.
+
+```bash
+FIGMA_CALENDAR_SUPABASE_URL="https://YOUR_PROJECT_REF.supabase.co" \
+FIGMA_CALENDAR_SUPABASE_PUBLISHABLE_KEY="sb_publishable_..." \
+FIGMA_CALENDAR_CAPTCHA_PROVIDER="turnstile" \
+FIGMA_CALENDAR_CAPTCHA_SITE_KEY="YOUR_CAPTCHA_SITE_KEY" \
+node scripts/build.mjs
+```
+
+생성된 `dist/`에는 다음 네 파일만 있어야 합니다.
+
+```text
+index.html
+script.js
+styles.css
+supabase-config.js
+```
+
 ## Supabase 연결 준비
 
 이 앱은 실제 개인정보가 없는 **개발 또는 교육용 프로젝트**에서만 사용하세요.
